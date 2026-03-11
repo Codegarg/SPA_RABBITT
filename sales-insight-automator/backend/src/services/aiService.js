@@ -26,14 +26,29 @@ Sales Data:
 ${dataString}
 `;
 
-    // Using gemini-2.5-flash (User specific stable version)
-    const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
-    const result = await model.generateContent(promptText);
-    const response = await result.response;
-    return response.text();
+    // Using fallback strategy for models
+    const modelNames = ["gemini-1.5-flash", "gemini-pro", "gemini-2.0-flash"];
+    let lastError;
+    
+    for (const modelName of modelNames) {
+      try {
+        console.log(`[AI] Attempting summary with model: ${modelName}`);
+        const model = ai.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(promptText);
+        const response = await result.response;
+        return response.text();
+      } catch (err) {
+        console.error(`[AI] Model ${modelName} failed:`, err.message);
+        lastError = err;
+        continue; // Try next model
+      }
+    }
+    
+    throw lastError;
   } catch (error) {
     console.error('AI Generation Error:', error);
-    throw new Error('Failed to generate AI summary.');
+    // Expose the specific error message to help the user troubleshoot in the UI
+    throw new Error(`AI Error: ${error.message || 'Unknown generation failure'}`);
   }
 };
 
