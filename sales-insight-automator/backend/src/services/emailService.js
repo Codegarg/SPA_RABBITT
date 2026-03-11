@@ -64,7 +64,12 @@ const sendSummaryEmail = async (toEmail, summaryText) => {
     console.log('Email sent: %s', info.messageId);
     return info;
   } catch (error) {
-    console.error('Email Delivery Error:', error);
+    console.error('[Email Service Error] Detailed breakdown:', {
+      message: error.message,
+      code: error.code,
+      command: error.command,
+      response: error.response
+    });
     throw new Error('Failed to send email summary.');
   }
 };
