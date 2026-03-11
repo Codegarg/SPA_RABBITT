@@ -4,13 +4,20 @@ const sendSummaryEmail = async (toEmail, summaryText) => {
   try {
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT || 587,
-      secure: process.env.SMTP_PORT == 465, // true for 465, false for 587
+      port: parseInt(process.env.SMTP_PORT) || 587,
+      secure: process.env.SMTP_PORT == '465', // true for 465, false for others
       auth: {
         user: process.env.SMTP_USER,
         pass: process.env.SMTP_PASS,
       },
+      // Increase timeout for slow SMTP connections
+      connectionTimeout: 10000, 
+      greetingTimeout: 10000,
     });
+
+    // Verify connection configuration
+    await transporter.verify();
+    console.log('[Email] SMTP connection verified successfully.');
 
     // Formatting plain text to professional HTML
     const htmlSummary = summaryText

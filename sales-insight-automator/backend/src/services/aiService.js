@@ -10,29 +10,24 @@ const generateSummary = async (salesData) => {
     // Initialize the SDK with the provided API key
     const ai = new GoogleGenerativeAI(apiKey);
     
-    // Convert sales data to a formatted string. 
-    // We limit to 200 rows to ensure fast response and stay within token/time limits.
-    const dataString = JSON.stringify(salesData.slice(0, 200));
+    // Simplify data payload to reduce tokens and speed up AI comprehension
+    // We convert the first 100 rows to a dense string instead of raw JSON
+    const dataSlice = salesData.slice(0, 100);
+    const headers = Object.keys(dataSlice[0] || {}).join(',');
+    const rows = dataSlice.map(row => Object.values(row).join(',')).join('\n');
+    const dataString = `${headers}\n${rows}`;
     
     const promptText = `
-You are a senior business analyst.
-
-Analyze the following sales dataset and generate a professional executive summary including:
-
-• Key revenue insights
-• Top performing product category
-• Regional performance trends
-• Any anomalies or cancellations
-• A concise executive conclusion.
-
-Return the summary as plain text.
+You are a senior business analyst. Analyze this sales data (CSV format) and generate a professional executive summary.
+Focus on: Revenue, Top Product, Regional Trends, and Anomalies.
+Return summary as plain text.
 
 Sales Data:
 ${dataString}
 `;
 
-    // Using gemini-2.5-flash as the fast, default model
-    const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
+    // Using gemini-1.5-flash (Production standard for speed and stability)
+    const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
     const result = await model.generateContent(promptText);
     const response = await result.response;
     return response.text();
