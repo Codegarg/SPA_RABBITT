@@ -19,10 +19,17 @@ export const generateSummary = async (file, email) => {
 };
 
 export const checkHealth = async () => {
-  // Ensure we hit the root '/health' port 5000 rather than '/api/v1/health'
-  const healthUrl = API_BASE_URL.replace('/api/v1', '') + '/health';
-  const response = await axios.get(healthUrl);
-  return response.data;
+  try {
+    // Construct health URL from base URL
+    const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL.slice(0, -1) : API_BASE_URL;
+    const healthUrl = baseUrl.replace('/api/v1', '') + '/health';
+    
+    const response = await axios.get(healthUrl);
+    return response.data;
+  } catch (error) {
+    console.error('Health Check Failed:', error.message);
+    throw error;
+  }
 };
 
 export default apiClient;
