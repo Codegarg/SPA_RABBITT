@@ -26,8 +26,8 @@ Sales Data:
 ${dataString}
 `;
 
-    // Using gemini-1.5-flash (Production standard for speed and stability)
-    const model = ai.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Using gemini-2.5-flash (User specific stable version)
+    const model = ai.getGenerativeModel({ model: "gemini-2.5-flash" });
     const result = await model.generateContent(promptText);
     const response = await result.response;
     return response.text();
