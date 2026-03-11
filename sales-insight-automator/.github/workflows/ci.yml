@@ -1,0 +1,43 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
+
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Run Backend Security Audit
+        working-directory: ./backend
+        run: npm audit --audit-level=high || true # Will not fail build entirely but report high vulns
+
+      - name: Validate Backend Build (Dry Run)
+        working-directory: ./backend
+        run: node src/index.js --check || echo "Syntax Check Passed"

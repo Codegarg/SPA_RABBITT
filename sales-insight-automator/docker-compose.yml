@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sales_insight_backend
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    environment:
+      - PORT=5000
+      - CORS_ORIGIN=http://localhost:3000
+    networks:
+      - sales_network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sales_insight_frontend
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:5000/api/v1 # This is mapped to the browser on the host
+    depends_on:
+      - backend
+    networks:
+      - sales_network
+    restart: unless-stopped
+
+networks:
+  sales_network:
+    driver: bridge
