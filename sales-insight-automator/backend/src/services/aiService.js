@@ -11,8 +11,8 @@ const generateSummary = async (salesData) => {
     const ai = new GoogleGenerativeAI(apiKey);
     
     // Convert sales data to a formatted string. 
-    // We limit to the first 1000 rows to ensure we don't exceed token limits.
-    const dataString = JSON.stringify(salesData.slice(0, 1000));
+    // We limit to 200 rows to ensure fast response and stay within token/time limits.
+    const dataString = JSON.stringify(salesData.slice(0, 200));
     
     const promptText = `
 You are a senior business analyst.

@@ -34,23 +34,24 @@ const generateSummary = async (req, res, next) => {
       return res.status(400).json({ success: false, error: 'The uploaded file is empty or contains no readable data.' });
     }
 
-    // Note: AI parsing can take a few seconds, but standard HTTP requests can hold open 
-    // unless timeout requires async queue (e.g., BullMQ). Vercel limits 10s for free, Render usually 100s.
-    
     // 3. Generate AI Summary
+    console.log(`[AI] Generating summary for ${email}...`);
     const summaryText = await aiService.generateSummary(parsedData);
+    console.log(`[AI] Summary generated successfully.`);
 
-    // 4. Send the Email
-    await emailService.sendSummaryEmail(email, summaryText);
+    // 4. Send the Email (Non-blocking to avoid HTTP timeouts)
+    console.log(`[Email] Dispatching summary to ${email}...`);
+    emailService.sendSummaryEmail(email, summaryText)
+      .then(() => console.log(`[Email] Dispatch successful to ${email}.`))
+      .catch(emailErr => console.error(`[Email] Background delivery failed:`, emailErr));
 
     // 5. Return Success Response
     return res.status(200).json({
       success: true,
       summary: summaryText,
-      message: `Executive summary is being generated and will be sent to ${email}.`,
+      message: `Executive summary generated! It is also being sent to ${email} right now.`,
       data: {
-        // Return a quick snippet for the frontend to show optionally
-        summaryPreview: summaryText.substring(0, 150) + '...'
+        summaryPreview: summaryText.substring(0, 300) + '...'
       }
     });
 
